@@ -50,6 +50,9 @@ class Room:
 		# Set to True once this roo visited for the 1st time.
 		self.__visited = False
 
+		# Room inventory
+		self.__inventory = []
+
 		# Room's exits. This is a a list[int] where the position in this list is:
 		# 0 - north
 		# 1 - northeast
@@ -73,8 +76,47 @@ class Room:
 	def room_description(self) -> str:
 		if self.__visited == False:
 			self.__visited = True
-			return f"{self.__room_desc}\n"
+			return f"{self.__room_desc}"
 		return '\n'
+
+	def room_desc_always(self) -> str:
+		return f"{self.__room_desc}"
+
+	def room_inv(self) -> None:
+		if len(self.__inventory) == 0:
+			# Nothing to see here.
+			return
+		print("You see:")
+		for item in self.__inventory:
+			print(f"* {item}")
+		print("")
+
+	def room_inv_add(self, item: str) -> None:
+		if len(self.__inventory) == 0:
+			self.__inventory.append(item)
+			return
+		if not(item in self.__inventory):
+			# Only add it if it's not already here.
+			self.__inventory.append(item)
+			return
+		raise Exception(f"Item: {item} already exists!")
+
+	def take(self, item: str) -> str:
+		# print(f"{item=}")
+		# print(f"{self.__inventory=}")
+		u_item = item.upper()
+		u_list = [x.upper() for x in self.__inventory]
+		if u_item in u_list:
+			idx = u_list.index(u_item)
+
+			# Remove the item from the room
+			p_item = self.__inventory.pop(idx)
+
+			# Return it so the game loop can give it to the player
+			return p_item
+		else:
+			# Item not in the room; nothing to return.
+			return ""
 
 	def can_go_in_direction(self, dir: RoomIdx) -> bool:
 		idx = dir.value
