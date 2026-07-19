@@ -2,8 +2,21 @@
 #
 # (c) 2026
 # ClicKill Microbits
+#
+# This module implements the rooms in the game.
+#
+# The room is a class that holds the room's name, the descriptive
+# text, a boolean flag to indicate f this room has been visited,
+# and a list[int] of exits from the room. The indices into this list
+# are the RoomIdx enumerated values.
+#
+# Room #0 is the 'player', an no exits exist from it, and no entrances should exist to it
+# from other rooms.
+#
+# All the other rooms are actual rooms that can - but might not - have any items in them.
 
 from enum import Enum
+from inventory import global_inventory
 
 class RoomIdx(Enum):
 	ROOMIDX_North = 0
@@ -40,7 +53,8 @@ class RoomIdx(Enum):
 			return "RoomIdx.ROOMIDX_Down"
 
 class Room:
-	def __init__(self, room_name: str, room_desc: str, room_exits: list[int]):
+	# Duh.
+	def __init__(self, room_name: str, room_desc: str, room_idx: int, room_exits: list[int]):
 		# Room's name (ex: 'damp cave')
 		self.room_name = room_name
 
@@ -50,8 +64,8 @@ class Room:
 		# Set to True once this roo visited for the 1st time.
 		self.__visited = False
 
-		# Room inventory
-		self.__inventory = []
+		# The index of this room in the list of rooms in main().
+		self.__index = room_idx
 
 		# Room's exits. This is a a list[int] where the position in this list is:
 		# 0 - north
@@ -67,57 +81,40 @@ class Room:
 		# and each element's value is an index into a global list[Room] that the exit links to.
 		self.__room_exits = room_exits
 
+	# Debugging
 	def __repr__(self) -> str:
 		return f"{self.room_name=}, {self.room_desc=}, {self.room_exits=}"
 
+	# Getter.
+	#   Supply an integer index (see above) to get the index into the list of rooms (held in main.py)
+	#   that the exit from this room takes the player to.
 	def room_exit(self, idx: int) -> int:
 		return self.__room_exits[idx]
 
+	# Getter.
+	#   Returns the description for this room if it hasn't been visited yet, or an empty string.
 	def room_description(self) -> str:
 		if self.__visited == False:
 			self.__visited = True
 			return f"{self.__room_desc}"
 		return '\n'
 
+	# Getter.
+	#  Similar to the above, but always returns the description for the room.
 	def room_desc_always(self) -> str:
 		return f"{self.__room_desc}"
 
+	# Getter.
+	#   Return's the room's own index into the global list of rooms in main.py
+	def room_index(self) -> int:
+		return self.__index
+
+	# Print the room's inventory (if any) to stdout.
 	def room_inv(self) -> None:
-		if len(self.__inventory) == 0:
-			# Nothing to see here.
-			return
-		print("You see:")
-		for item in self.__inventory:
-			print(f"* {item}")
-		print("")
+		global_inventory.show_inv_for(self.__index)
 
-	def room_inv_add(self, item: str) -> None:
-		if len(self.__inventory) == 0:
-			self.__inventory.append(item)
-			return
-		if not(item in self.__inventory):
-			# Only add it if it's not already here.
-			self.__inventory.append(item)
-			return
-		raise Exception(f"Item: {item} already exists!")
-
-	def take(self, item: str) -> str:
-		# print(f"{item=}")
-		# print(f"{self.__inventory=}")
-		u_item = item.upper()
-		u_list = [x.upper() for x in self.__inventory]
-		if u_item in u_list:
-			idx = u_list.index(u_item)
-
-			# Remove the item from the room
-			p_item = self.__inventory.pop(idx)
-
-			# Return it so the game loop can give it to the player
-			return p_item
-		else:
-			# Item not in the room; nothing to return.
-			return ""
-
+	# Function that returns True if the player can exit the room in the direction
+	# indicated by 'dir'.
 	def can_go_in_direction(self, dir: RoomIdx) -> bool:
 		idx = dir.value
-		return (self.room_exits[idx] != 0)
+		return (self.__room_exits[idx] != 0)
