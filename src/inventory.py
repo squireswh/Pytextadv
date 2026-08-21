@@ -18,6 +18,7 @@
 
 from item import Item
 from helper import split_noun_adj
+from words import WordType, Word, global_words
 
 class Inventory:
 	def __init__(self):
@@ -52,6 +53,13 @@ class Inventory:
 
 		# Insert the item.
 		self.inventory.append(the_item)
+
+		# Make a Word for this item.
+		noun_word = Word(the_item.name, WordType.WORDTYPE_Noun)
+		global_words.add_word(noun_word)
+		if len(the_item.adjective) > 0:
+			adj_word = Word(the_item.adjective, WordType.WORDTYPE_Adjective)
+			global_words.add_word(adj_word)
 
 		# Make sure the item is not already in the dictionary
 		if u_desc not in self.inv_dict:
@@ -129,34 +137,34 @@ class Inventory:
 			# Something went wrong.
 			return False
 
-# This function returns True if the item 'item' is in room 0 (the player's inventory.)
-def player_has_item(self, item: str) -> bool:
-	# Just in case...
-	# This is the key into the dictionary.
-	if room_no > 0:
-		return room_has_item(item)
-	u_desc = item.upper()
-	if u_desc in self.inv_dict:
-		idx = self.inv_dict[u_desc]
-	else:
-		# we didn't find 'item' in the player's inventory;
-		# try disambiguating it.
-		n_amb, t_key = ambiguate(u_desc)
-		if n_amb != 1:
-			if n_amb > 1:
-				print(f"Which {u_desc}?")
-			return False
-		else:
-			u_desc = t_key
+	# This function returns True if the item 'item' is in room 0 (the player's inventory.)
+	def player_has_item(self, item: str) -> bool:
+		# Just in case...
+		# This is the key into the dictionary.
+		if room_no > 0:
+			return room_has_item(item)
+		u_desc = item.upper()
+		if u_desc in self.inv_dict:
 			idx = self.inv_dict[u_desc]
+		else:
+			# we didn't find 'item' in the player's inventory;
+			# try disambiguating it.
+			n_amb, t_key = ambiguate(u_desc)
+			if n_amb != 1:
+				if n_amb > 1:
+					print(f"Which {u_desc}?")
+				return False
+			else:
+				u_desc = t_key
+				idx = self.inv_dict[u_desc]
 
-	# Get the actual Item.
-	the_item = self.inventory[idx]
+		# Get the actual Item.
+		the_item = self.inventory[idx]
 
-	# Is it where we expect?
-	if the_item.item_location == 0:
-		return True
-	return False	
+		# Is it where we expect?
+		if the_item.item_location == 0:
+			return True
+		return False	
 
 	# This function returns True if the item 'item' is in room 'room_no'
 	def room_has_item(self, room_no: int, item: str) -> bool:

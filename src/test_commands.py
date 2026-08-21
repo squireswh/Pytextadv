@@ -16,3 +16,17 @@ class TestCommands(unittest.TestCase):
 		self.assertEqual(new_command.is_good_command('text'), False)
 		self.assertEqual(new_command.is_good_command('x'), False)
 
+	def test_cmd_alias(self):
+		new_command = Command('test', 't', 0)
+		self.assertEqual(new_command.cmd_alias(), 't')
+
+	def test_cmd_command(self):
+		new_command = Command('test', 't', 0)
+		self.assertEqual(new_command.cmd_command(), 'test')
+
+	def test_cmd_built_in(self):
+		new_command = Command('test', 't', 0)
+		self.assertEqual(new_command.built_in(), True)
+		new_command = Command('test', 't', 0, False)
+		self.assertEqual(new_command.built_in(), False)
+			
